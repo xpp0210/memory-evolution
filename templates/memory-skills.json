@@ -1,0 +1,141 @@
+{
+  "version": 2,
+  "description": "安宝的 Memory Skill Bank - 融合 MemSkill（元记忆）+ Memento（反思循环）",
+  "updated": "2026-03-31",
+  "reflection_protocol": {
+    "description": "每次任务完成后的自动反思流程（Memento Read→Execute→Reflect→Write）",
+    "steps": [
+      "1. ROUTE: 识别当前任务属于哪个 skill（按 trigger 匹配）",
+      "2. EXECUTE: 按 skill 的 action 执行任务",
+      "3. REFLECT: 任务完成后自动评估 → 成功/失败/部分成功",
+      "4. ATTRIBUTE: 如果失败 → 归因到具体 skill 的哪个环节",
+      "5. WRITE: 成功→success_count+1；失败→fail_count+1 + 记录归因到 reflect_log",
+      "6. EVOLVE: 如果某 skill fail_count≥3 → 触发 Designer 流程优化该 skill"
+    ],
+    "reflect_questions": [
+      "用户对结果满意吗？",
+      "有没有中途纠正或重做？",
+      "哪个环节耗时最长？",
+      "有什么可以下次跳过的冗余步骤？"
+    ]
+  },
+  "skills": [
+    {
+      "id": "error-debug",
+      "name": "技术调试",
+      "trigger": "遇到报错、工具调用失败、命令执行失败",
+      "action": "记录错误摘要+根因+解决方案到 iteration-rules.md，标记为 A类（能力补丁）",
+      "memory_focus": "只记：错误现象、根因、解决方案。不记：中间排查过程",
+      "reflect_checks": ["根因是否准确？", "解决方案是否彻底？", "是否需要更新 iteration-rules？"],
+      "priority": "high",
+      "evolved_from": "AGENTS.md 自动FIX机制",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "deep-research",
+      "name": "深度研究",
+      "trigger": "用户要求深入研究/分析/学习某个项目或话题",
+      "action": "搜3+来源→对比分析→提炼核心洞察→保存Obsidian笔记→上传飞书文档",
+      "memory_focus": "只记：核心洞察、与我们的关系、可落地行动。不记：原始内容细节",
+      "reflect_checks": ["是否找到≥3个来源？", "核心洞察是否提炼到位？", "可落地行动是否具体可执行？"],
+      "priority": "medium",
+      "evolved_from": "ljg-learn + 自我迭代流程",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "tool-install",
+      "name": "工具安装",
+      "trigger": "安装新工具/插件/skill/CLI工具",
+      "action": "安全评估→虚拟环境测试→安装→验证→更新MEMORY.md和TOOLS.md",
+      "memory_focus": "只记：工具名、版本、路径、核心用法、已知问题。不记：安装步骤细节",
+      "reflect_checks": ["安全评估是否完整？", "安装后是否验证通过？", "MEMORY.md是否已更新？"],
+      "priority": "high",
+      "evolved_from": "MemOS Local / ClawTeam 安装经验",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "doc-creation",
+      "name": "文档创作",
+      "trigger": "用户要求保存/写文档/发飞书",
+      "action": "先完成本地文件→验证内容质量→再上传飞书→确认结果",
+      "memory_focus": "只记：文档主题、飞书链接、存放路径。不记：文档完整内容",
+      "reflect_checks": ["本地文件是否完整？", "飞书上传是否成功？", "用户是否确认？"],
+      "priority": "medium",
+      "evolved_from": "iteration-rules.md C4（分步执行）",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "code-dev",
+      "name": "代码开发",
+      "trigger": "用户要求写代码/修bug/重构",
+      "action": "理解需求→设计方案→编码→测试→交付说明",
+      "memory_focus": "只记：架构决策、关键技术选型、踩坑点。不记：每行代码",
+      "reflect_checks": ["需求理解是否准确？", "代码是否可运行？", "有无边界情况遗漏？"],
+      "priority": "medium",
+      "evolved_from": "code-review skill + Java Spring Boot skill",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "daily-ops",
+      "name": "日常运维",
+      "trigger": "检查系统状态/定时任务/备份/清理",
+      "action": "检查→记录状态→发现问题→修复→报告",
+      "memory_focus": "只记：异常和修复方案。不记：正常运行状态",
+      "reflect_checks": ["是否发现隐藏问题？", "修复是否彻底？", "下次检查间隔是否合理？"],
+      "priority": "low",
+      "evolved_from": "HEARTBEAT.md 维护任务",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "learning-extract",
+      "name": "学习提取",
+      "trigger": "阅读文章/书籍/论文后需要沉淀知识",
+      "action": "提炼3-5个核心洞察→与现有知识关联→行动清单→保存Obsidian",
+      "memory_focus": "只记：核心框架、对比差异、可落地行动。不记：原文内容",
+      "reflect_checks": ["洞察是否深刻？", "是否与已有知识建立了关联？", "行动清单是否具体？"],
+      "priority": "medium",
+      "evolved_from": "Dan Koe 技术堆叠 + ljg-paper",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    },
+    {
+      "id": "self-evolve",
+      "name": "自我进化",
+      "trigger": "同类错误≥2次 / 用户不满 / 完成复杂任务后",
+      "action": "分析失败模式→定根因→定措施→写入iteration-rules.md→更新本skill bank",
+      "memory_focus": "只记：模式识别结果、根因分析、具体措施。不记：错误详情",
+      "reflect_checks": ["模式识别是否准确？", "措施是否具体可执行？", "是否已固化到规则库？"],
+      "priority": "high",
+      "evolved_from": "MemSkill Designer + Memento Reflect + 5步自我迭代法",
+      "success_count": 0,
+      "fail_count": 0,
+      "last_reflect": null
+    }
+  ],
+  "reflect_log": [],
+  "evolution_log": [
+    {
+      "date": "2026-03-31",
+      "action": "v1 初始化 Memory Skill Bank（8个核心技能）",
+      "inspired_by": "MemSkill论文 - 元记忆范式"
+    },
+    {
+      "date": "2026-03-31",
+      "action": "v2 融合 Memento 反思循环：加入 reflection_protocol（6步）、reflect_checks（每个技能4个自检问题）、reflect_log（归因记录）",
+      "inspired_by": "Memento-Skills 论文 - Read→Execute→Reflect→Write 闭环"
+    }
+  ]
+}
