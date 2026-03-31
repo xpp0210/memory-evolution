@@ -1,7 +1,7 @@
 # Memory Evolution Skill
 
 > 融合 MemSkill（元记忆）+ Memento-Skills（反思循环）+ 自我迭代法
-> 版本：1.0.0 | 2026-03-31
+> 版本：1.1.0 | 2026-03-31
 
 ## 这是什么
 
@@ -15,127 +15,96 @@
 ## 核心理念
 
 ```
-传统记忆：  存什么 → 存内容（越多越好）
-元记忆：    怎么存 → 存技能（精简高质量）
+传统记忆：存什么 → 存内容（越多越好）
+元记忆：  怎么存 → 存技能（精简高质量）
 ```
 
 三篇论文支撑：
-- **MemSkill**（arXiv:2602.02474）— 元记忆范式，技能条件化的记忆构建
-- **Memento-Skills**（arXiv:2603.18743）— Read→Execute→Reflect→Write 闭环
-- **5步自我迭代法**（娇姐话AI圈）— 实用的复盘框架
+- **MemSkill**（arXiv:2602.02474）— 元记忆范式
+- **Memento-Skills**（arXiv:2603.18743）— 反思闭环
+- **5步自我迭代法**（娇姐话AI圈）— 复盘框架
 
-## 架构
+## 反思循环：每次任务后自动执行
 
-```
-┌─────────────────────────────────────────┐
-│            Memory Skill Bank             │
-│         (memory-skills.json)             │
-│  8个核心技能 × trigger/action/focus      │
-└──────────────┬──────────────────────────┘
-               │
-    ┌──────────┴──────────┐
-    ▼                      ▼
-┌────────┐          ┌──────────┐
-│Reflect │          │ Designer  │
-│ Loop   │          │ (进化引擎)│
-└───┬────┘          └────┬─────┘
-    │                     │
-    ▼                     ▼
-┌─────────────────────────────────────┐
-│          输出目标                    │
-│  iteration-rules.md (固化规则)       │
-│  reflect_log       (归因记录)       │
-│  MEMORY.md         (长期记忆)       │
-└─────────────────────────────────────┘
-```
+### 步骤1：ROUTE（路由）
 
-## 工作流程
+任务完成后，判断属于哪个 skill：
 
-### 1. 任务开始时 → ROUTE
+| 触发条件 | Skill |
+|---------|-------|
+| 工具调用失败、命令报错 | `error-debug` |
+| 深入分析项目或话题 | `deep-research` |
+| 安装新工具/插件/Skill | `tool-install` |
+| 保存/写文档/发飞书 | `doc-creation` |
+| 写代码/修bug/重构 | `code-dev` |
+| 检查系统/定时任务/备份 | `daily-ops` |
+| 阅读后沉淀知识 | `learning-extract` |
+| 同类错误≥2次、用户不满 | `self-evolve` |
 
-识别当前任务属于哪个 skill：
-- 工具调用失败 → `error-debug`
-- 深入研究项目 → `deep-research`
-- 安装新工具 → `tool-install`
-- 创建文档 → `doc-creation`
-- 写代码 → `code-dev`
-- 系统检查 → `daily-ops`
-- 学习沉淀 → `learning-extract`
-- 同类错误≥2次 → `self-evolve`
+### 步骤2：EXECUTE（执行）
 
-### 2. 任务执行中 → EXECUTE
+按匹配 skill 的 `action` 执行任务。
 
-按匹配 skill 的 `action` 字段执行。
+### 步骤3：REFLECT（反思）
 
-### 3. 任务完成后 → REFLECT
+任务完成后，用 skill 的 `reflect_checks` 自检：
+- 根因是否准确？
+- 解决方案是否彻底？
+- 是否需要更新规则库？
+- 有没有重复犯的错？
 
-用 skill 的 `reflect_checks` 自检：
-- 用户对结果满意吗？
-- 有没有中途纠正或重做？
-- 哪个环节耗时最长？
-- 有什么可以下次跳过的冗余步骤？
+### 步骤4：WRITE（记录）
 
-### 4. 评估结果 → ATTRIBUTE + WRITE
+**任务成功** → `success_count += 1`
+**任务失败** → `fail_count += 1`，并记录到 `reflect_log`
 
-- **成功** → skill.success_count + 1
-- **失败** → skill.fail_count + 1 + 记录归因到 reflect_log
+### 步骤5：EVOLVE（进化）
 
-### 5. 定期检查 → EVOLVE
+当 `fail_count >= 3` 时：
+1. 分析失败模式
+2. 定位根因（能力/态度/流程）
+3. 优化 skill 的 action 或 memory_focus
+4. 写回 memory-skills.json
+5. 如需新规则，追加到 iteration-rules.md
 
-- 某 skill `fail_count ≥ 3` → 触发 Designer 优化
-- 发现新场景无匹配技能 → 自动提议新技能
-- 每周心跳回顾各技能成功率
+## 实际执行方式
 
-## 安装方法
+### 心跳时执行
 
-### 方式一：快速安装（推荐）
+在 HEARTBEAT.md 中添加反思检查，每次心跳自动运行 `scripts/reflect.sh`。
+
+### 任务完成时更新
+
+每次完成任务后，Agent 应：
+1. 判断匹配的 skill
+2. 评估成功/失败
+3. 更新 memory-skills.json 的计数器
+4. 如果 fail_count >= 3，触发进化
+
+### 查看状态
 
 ```bash
-# 1. 复制 skill 到你的 OpenClaw workspace
-cp -r skills/memory-evolution/ ~/.openclaw/workspace/skills/
-
-# 2. 复制模板文件
-cp skills/memory-evolution/templates/memory-skills.json ~/.openclaw/workspace/memory/
-cp skills/memory-evolution/templates/iteration-rules.md ~/.openclaw/workspace/memory/
-
-# 3. 初始化记忆技能库
-# （首次使用时，skill 会自动初始化）
+bash ~/.openclaw/workspace/scripts/reflect.sh
 ```
 
-### 方式二：自定义安装
+### 深度复盘（手动触发）
 
-1. 复制 `templates/memory-skills.json` 到 `~/.openclaw/workspace/memory/`
-2. 复制 `templates/iteration-rules.md` 到 `~/.openclaw/workspace/memory/`
-3. 在 AGENTS.md 中添加自动进化机制章节（参考 `templates/agents-additions.md`）
-4. 在 HEARTBEAT.md 中加入每周技能回顾任务
-
-## 文件清单
-
-```
-skills/memory-evolution/
-├── SKILL.md                    ← 你正在读的这个文件
-├── templates/
-│   ├── memory-skills.json      ← 元记忆技能库模板
-│   ├── iteration-rules.md      ← 固化规则库模板
-│   └── agents-additions.md     ← 需要添加到 AGENTS.md 的内容
-└── scripts/
-    └── init-memory-skill.sh    ← 初始化脚本
-```
+用户说"自我迭代"/"复盘"/"反思"时，执行完整 5 步流程。
 
 ## 自定义
 
 ### 修改技能库
 
-编辑 `memory/memory-skills.json`，按需增删技能。每个技能结构：
+编辑 `memory/memory-skills.json`，每个技能结构：
 
 ```json
 {
-  "id": "your-skill-id",
+  "id": "skill-id",
   "name": "技能名称",
-  "trigger": "触发条件描述",
+  "trigger": "触发条件",
   "action": "执行步骤",
-  "memory_focus": "只记什么，不记什么",
-  "reflect_checks": ["自检问题1", "自检问题2"],
+  "memory_focus": "只记什么",
+  "reflect_checks": ["自检问题"],
   "priority": "high|medium|low",
   "success_count": 0,
   "fail_count": 0
@@ -144,19 +113,15 @@ skills/memory-evolution/
 
 ### 适配不同角色
 
-默认技能库面向**技术型 AI 助手**。如果你的角色不同：
+- **写作助手**：drafting / editing / publishing / research
+- **项目管理者**：planning / tracking / reporting / review
+- **学习伴侣**：note-taking / spaced-review / concept-mapping
 
-- **写作助手**：替换为 `drafting` / `editing` / `publishing` / `research` 等技能
-- **项目管理者**：替换为 `planning` / `tracking` / `reporting` / `review` 等技能
-- **学习伴侣**：替换为 `note-taking` / `spaced-review` / `concept-mapping` 等技能
-
-核心框架（反思循环 + 进化机制）不变，只替换技能内容。
-
-## 来源与致谢
+## 来源
 
 | 来源 | 贡献 |
 |------|------|
-| MemSkill（arXiv:2602.02474） | 元记忆范式、技能条件化记忆构建 |
-| Memento-Skills（arXiv:2603.18743） | Read→Execute→Reflect→Write 闭环 |
+| MemSkill (arXiv:2602.02474) | 元记忆范式 |
+| Memento-Skills (arXiv:2603.18743) | 反思闭环 |
 | 娇姐话AI圈 | 5步自我迭代法 |
-| OpenSpace | 自动FIX + Skill派生思想 |
+| OpenSpace | 自动FIX + Skill派生 |
