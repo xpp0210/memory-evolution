@@ -1,3 +1,8 @@
+---
+name: memory-evolution
+description: AI Agent 记忆进化体系，融合 MemSkill 元记忆 + Memento 反思循环 + 自我迭代法。每次任务完成后自动 ROUTE→REFLECT→WRITE，fail_count≥3 自动触发技能优化。适用于需要持续学习和自我改进的 OpenClaw 实例。
+---
+
 # Memory Evolution Skill
 
 > 融合 MemSkill（元记忆）+ Memento-Skills（反思循环）+ 自我迭代法
