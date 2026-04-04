@@ -126,7 +126,7 @@ def search_memos(query: str, limit: int = 20, min_score: float = 0.45) -> List[D
     conn = get_memos_db()
     try:
         # FTS5 关键词搜索（使用 chunks_fts 虚拟表）
-        fts_query = "SELECT id, content, summary FROM chunks_fts WHERE content MATCH ? LIMIT ?"
+        fts_query = "SELECT c.id, c.content, c.summary FROM chunks_fts fts JOIN chunks c ON fts.rowid = c.rowid WHERE fts.content MATCH ? LIMIT ?"
         cursor = conn.execute(fts_query, (f'"{query}"', limit * 2))
 
         fts_results = [
