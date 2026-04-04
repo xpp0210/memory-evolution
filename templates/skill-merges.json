@@ -1,0 +1,9 @@
+{
+  "merges": [],
+  "last_run": null,
+  "merge_strategies": {
+    "max_level": "保留最高级别，合并evidence",
+    "llm_arbitrate": "LLM仲裁，选择最优实现",
+    "union": "合并所有版本，保留差异化路径"
+  }
+}
