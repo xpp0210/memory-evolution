@@ -210,3 +210,47 @@ reflect.sh test <id>                        # Self-Questioning 测试
 
 **当前分支：** `feature/v5.0-planning`
 **GitHub：** https://github.com/xpp0210/memory-evolution/tree/feature/v5.0-planning
+
+---
+
+## 快速开始
+
+### 1. Memory Viewer
+
+可视化记忆、任务和技能的全功能 Web 界面。
+
+**访问地址：** http://127.0.0.1:18799
+
+**功能页面：**
+| 页面 | 功能 |
+|------|------|
+| Memories | 查看所有记忆 chunks，支持搜索、编辑、删除 |
+| Tasks | 浏览任务状态、结构化总结、生成技能 |
+| Skills | 浏览技能库、版本历史、质量评分 |
+| Analytics | 每日读写活动、记忆分类图表 |
+| Logs | 工具调用日志（memory_search、auto_recall等）|
+| Import | 从旧版 OpenClaw 记忆迁移到 MemOS |
+| Settings | 配置 embedding、summarizer、skill evolution 参数 |
+
+> ⚠️ Viewer 仅在 OpenClaw Gateway 运行时可用。如无法访问，检查 `openclaw status`。
+
+### 2. MemOS 搜索
+
+```bash
+# 从 MemOS 搜索记忆（Hybrid Search: FTS5 + Vector）
+cd ~/.openclaw/workspace/skills/memory-evolution
+python3 scripts/memos-integration.py search "关键词"
+
+# 双向同步技能库
+python3 scripts/memos-integration.py sync
+
+# 推送技能到 MemOS
+python3 scripts/memos-integration.py push-skill error-debug
+```
+
+### 3. 测试 Embedding
+
+```bash
+# 运行测试脚本（验证 embedding API + 向量搜索）
+bash ~/.openclaw/workspace/skills/memory-evolution/scripts/test-embedding.sh
+```

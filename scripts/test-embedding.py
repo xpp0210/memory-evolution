@@ -29,6 +29,11 @@ else:
     print("❌ Embedding failed")
     sys.exit(1)
 
+# 测试2: sync skill bank
+print("\n🔄 Testing skill bank sync...")
+skill_count = memos_integration.sync_skill_bank()
+print(f"✅ Sync complete: {skill_count} skills")
+
 # 测试2: hybrid search
 print("\n🔍 Testing hybrid search...")
 
