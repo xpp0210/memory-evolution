@@ -145,14 +145,14 @@ def search_memos(query: str, limit: int = 20, min_score: float = 0.45) -> List[D
 
         if query_embedding:
             # 查询 embeddings 表，计算余弦相似度
-            vec_query = """
-                SELECT e.chunk_id, c.content, c.summary, e.vector
+            # 使用查询向量的实际维度（兼容不同维度的 embeddings）
+            vec_query = f"""
+                SELECT e.chunk_id, c.content, c.summary, e.vector, e.dimensions
                 FROM embeddings e
                 JOIN chunks c ON e.chunk_id = c.id
-                WHERE e.dimensions = ?
-                LIMIT ?
+                LIMIT {limit * 2}
             """
-            cursor = conn.execute(vec_query, (len(query_embedding), limit * 2))
+            cursor = conn.execute(vec_query)
 
             for row in cursor.fetchall():
                 chunk_id = row[0]

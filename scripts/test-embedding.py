@@ -31,9 +31,17 @@ else:
 
 # 测试2: hybrid search
 print("\n🔍 Testing hybrid search...")
-results = search_memos("记忆进化", limit=5)
 
-print(f"\n✅ Found {len(results)} results:")
+# 调试：先单独测试 FTS5
+print("\n📄 Testing FTS5 only...")
+try:
+    results_fts = search_memos("记忆进化", limit=5)
+    print(f"✅ FTS5 found {len(results_fts)} results")
+except Exception as e:
+    print(f"❌ FTS5 error: {e}")
+
+results = search_memos("记忆进化", limit=5)
+print(f"\n✅ Hybrid search found {len(results)} results:")
 for i, r in enumerate(results, 1):
     source_emoji = {"memos-fts5": "📄", "memos-vector": "🧠"}[r["source"]]
     print(f"{i}. {source_emoji} [{r['score']:.2f}] {r['excerpt'][:80]}...")
