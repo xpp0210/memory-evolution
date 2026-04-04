@@ -125,9 +125,16 @@ def search_memos(query: str, limit: int = 20, min_score: float = 0.45) -> List[D
     """
     conn = get_memos_db()
     try:
-        # FTS5 关键词搜索（使用 chunks_fts 虚拟表）
-        fts_query = "SELECT c.id, c.content, c.summary FROM chunks_fts fts JOIN chunks c ON fts.rowid = c.rowid WHERE fts.content MATCH ? LIMIT ?"
-        cursor = conn.execute(fts_query, (f'"{query}"', limit * 2))
+        # FTS5 关键词搜索（trigram 分词器对中文支持差，需要双模式）
+        has_chinese = any('\u4e00' <= ch <= '\u9fff' for ch in query)
+        if has_chinese:
+            # 中文：回退到 LIKE 查询（trigram 无法匹配中文三元组）
+            fts_query = "SELECT id, content, summary FROM chunks WHERE content LIKE ? OR summary LIKE ? LIMIT ?"
+            cursor = conn.execute(fts_query, (f'%{query}%', f'%{query}%', limit * 2))
+        else:
+            # 英文：使用 FTS5 MATCH（trigram 对英文工作正常）
+            fts_query = "SELECT c.id, c.content, c.summary FROM chunks_fts fts JOIN chunks c ON fts.rowid = c.rowid WHERE fts.content MATCH ? LIMIT ?"
+            cursor = conn.execute(fts_query, (f'"{query}"', limit * 2))
 
         fts_results = [
             {
@@ -216,14 +223,13 @@ def merge_results(fts_results: List[Dict], vec_results: List[Dict], min_score: f
     )
 
     # 根据排序后的 chunkId 查找原始数据
+    # RRF 分数尺度(~0.01)与向量相似度(~0.5)不同，不过滤RRF分数
     final_results = []
     for r in sorted_results[:len(fts_results) + len(vec_results)]:
-        if r["score"] < min_score:
-            continue
         # 查找对应的 FTS 或向量结果
         source_result = next((item for item in fts_results + vec_results if item["chunkId"] == r["chunkId"]), None)
         if source_result:
-            final_results.append({**source_result, "score": r["score"]})
+            final_results.append({**source_result, "rrfScore": r["score"]})
 
     return final_results
 
