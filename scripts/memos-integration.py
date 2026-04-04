@@ -41,36 +41,23 @@ def search_memos(query: str, limit: int = 20, min_score: float = 0.45) -> List[D
     """
     conn = get_memos_db()
     try:
-        # FTS5 关键词搜索
-        fts_query = "SELECT id, content, chunk_id FROM chunks WHERE content MATCH ? LIMIT ?"
+        # FTS5 关键词搜索（使用 chunks_fts 虚拟表）
+        fts_query = "SELECT id, content, summary FROM chunks_fts WHERE content MATCH ? LIMIT ?"
         cursor = conn.execute(fts_query, (f'"{query}"', limit * 2))
 
         fts_results = [
             {
-                "chunkId": row[1],
-                "excerpt": row[0][:500],  # 前500字符
+                "chunkId": f"chunk_{row[0]}",  # 使用 id 生成 chunkId
+                "excerpt": row[2] if row[2] else row[1][:500],  # 优先用 summary
                 "source": "memos-fts5",
                 "score": 0.8  # FTS5 固定高分
             }
             for row in cursor.fetchall()
         ]
 
-        # 向量语义搜索（如果有 embedding）
-        vec_query = """
-            SELECT id, content, chunk_id, vector
-            FROM chunks
-            ORDER BY vector LIMIT ?
-        """
-        cursor = conn.execute(vec_query, (limit,))
-        vec_results = [
-            {
-                "chunkId": row[1],
-                "excerpt": row[0][:500],
-                "source": "memos-vector",
-                "score": 0.7  # 临时固定值
-            }
-            for row in cursor.fetchall()
-        ]
+        # 向量语义搜索（暂未实现，v5.0-beta 中接入真实 embedding）
+        vec_results = []
+        # TODO: v5.0-beta 中接入向量搜索
 
         return merge_results(fts_results, vec_results, min_score)
     finally:
@@ -95,21 +82,33 @@ def merge_results(fts_results: List[Dict], vec_results: List[Dict], min_score: f
     k = 60  # RRF 常数
 
     for r in fts_results:
-        merged[r["chunkId"]] = merged.get(r["chunkId"], 0) + 1 / (k + 1)  # chunkId 从1开始
+        merged[r["chunkId"]] = merged.get(r["chunkId"], 0) + 1 / (k + 1)  # 简化：所有 FTS 结果给相同权重
 
     for r in vec_results:
-        merged[r["chunkId"]] = merged.get(r["chunkId"], 0) + 1 / (k + r["score"] + 1)  # 使用score而不是chunkId
+        merged[r["chunkId"]] = merged.get(r["chunkId"], 0) + 1 / (k + r["score"] + 1)
 
     # 排序并过滤
+    if not merged:
+        return []
+
     sorted_results = sorted(
-        [{"chunkId": cid, "score": merged[cid], **fts_results.get(cid, {})}
+        [{"chunkId": cid, "score": merged[cid]}
          for cid in merged],
         key=lambda x: x["score"],
         reverse=True
     )
 
-    return [{"score": r["score"], **fts_results.get(r["chunkId"], {})}
-            for r in sorted_results[:limit] if r["score"] >= min_score]
+    # 根据排序后的 chunkId 查找原始数据
+    final_results = []
+    for r in sorted_results[:limit]:
+        if r["score"] < min_score:
+            continue
+        # 查找对应的 FTS 或向量结果
+        source_result = next((item for item in fts_results + vec_results if item["chunkId"] == r["chunkId"]), None)
+        if source_result:
+            final_results.append({**source_result, "score": r["score"]})
+
+    return final_results
 
 
 def sync_skill_bank():
