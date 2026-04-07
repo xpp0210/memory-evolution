@@ -103,6 +103,11 @@ memory-evolution/
 │   ├── skill-capture.sh  # 技能捕获脚本
 │   ├── skill-discover.py # 技能发现
 │   ├── skill-feedback.py # 技能反馈收集
+│   ├── skill-proposal.py # 失败驱动提案生成（EvoSkill式）
+│   ├── skill-pareto.py   # Pareto多目标选择（成功率×活跃度×迁移性）
+│   ├── skill-verify.py   # SKILL.md结构评分
+│   ├── skill-freq-analyzer.py  # Token预算分析（SKILL0式）
+│   ├── diminishing-detector.py  # 递减检测（P2自适应阈值）
 │   └── meta-learn.py     # 元学习引擎
 ├── templates/
 │   └── capability-map.json  # 能力图谱模板

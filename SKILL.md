@@ -1,12 +1,15 @@
 ---
 name: memory-evolution
-description: AI Agent 记忆进化体系 v5.0。MemOS深度集成 + LLM驱动智能决策 + Hook实时监控 + 多Agent协作 + 自适应学习。
+description: AI Agent 记忆进化体系 v5.5。Pareto多目标选择+失败提案生成+递减自适应+P2阈值。。MemOS深度集成 + LLM驱动智能决策 + Hook实时监控 + 多Agent协作 + 自适应学习。
 ---
 
-# Memory Evolution Skill v5.0
+# Memory Evolution Skill v5.5
+## 触发条件
+当用户提到「memory evolution」相关任务时使用此Skill。
+
 
 > MemOS 深度集成的下一代记忆进化体系
-> 版本：5.0.0-alpha | 规划日期：2026-04-04
+> 版本：5.5.0 | 更新：2026-04-07
 
 ## 这是什么
 
@@ -254,3 +257,20 @@ python3 scripts/memos-integration.py push-skill error-debug
 # 运行测试脚本（验证 embedding API + 向量搜索）
 bash ~/.openclaw/workspace/skills/memory-evolution/scripts/test-embedding.sh
 ```
+
+## v5.5 更新（2026-04-07）
+
+### 新增脚本
+| 脚本 | 功能 |
+|------|------|
+| skill-pareto.py | Pareto多目标选择（成功率×活跃度×迁移性×独特性）|
+| skill-proposal.py | 失败驱动提案生成（EvoSkill式Proposer）|
+| skill-verify.py | SKILL.md结构评分（74skills质量分析）|
+| skill-freq-analyzer.py | Token预算分析（SKILL0渐进撤除思路）|
+| diminishing-detector.py | P2自适应阈值（高频≥10→0.50，中频3-9→0.40，低频≤2→0.30）|
+
+### 新增功能
+- Pareto前沿选择替代单目标排序
+- 7个失败提案自动生成
+- 64个skills补触发条件章节（75→85分）
+- reflect: 21✅ 0❌ 里程碑
